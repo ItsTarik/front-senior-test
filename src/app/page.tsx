@@ -1,7 +1,7 @@
 "use client";
 
 import { useMeasure } from "@uidotdev/usehooks";
-import { DayCalendar } from "@/dayCalendar";
+import { DayCalendar, EventItem } from "@/dayCalendar";
 import { groupedOverlapping } from "@/events";
 
 const margin = 25;
@@ -36,20 +36,54 @@ export default function Home() {
                     ([key, groupedEvents]) => {
                       return (
                         <div key={key} className="grouped-overlapping-events">
-                          {groupedEvents.map((e) => (
-                            <div
-                              className="event-item"
-                              key={e.id}
-                              style={{
-                                transform: `translateY(${scale(e.start)}px)`,
-                                height: `${
-                                  Number(scale(e.end)) - Number(scale(e.start))
-                                }px`,
-                              }}
-                            >
-                              {e.id}
-                            </div>
-                          ))}
+                          {groupedEvents.map((eventOrEvents, i) => {
+                            if (Array.isArray(eventOrEvents)) {
+                              return (
+                                <div
+                                  key={i}
+                                  style={{
+                                    position: "relative",
+                                    flex: 1,
+                                  }}
+                                >
+                                  {eventOrEvents.map((event) => {
+                                    return (
+                                      <div
+                                        key={event.id}
+                                        style={{
+                                          position: "absolute",
+                                          width: "100%",
+                                          top: 0,
+                                        }}
+                                      >
+                                        <EventItem
+                                          y={Number(scale(event.start))}
+                                          height={
+                                            Number(scale(event.end)) -
+                                            Number(scale(event.start))
+                                          }
+                                        >
+                                          {event.id}
+                                        </EventItem>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            }
+                            return (
+                              <EventItem
+                                key={eventOrEvents.id}
+                                y={Number(scale(eventOrEvents.start))}
+                                height={
+                                  Number(scale(eventOrEvents.end)) -
+                                  Number(scale(eventOrEvents.start))
+                                }
+                              >
+                                {eventOrEvents.id}
+                              </EventItem>
+                            );
+                          })}
                         </div>
                       );
                     }

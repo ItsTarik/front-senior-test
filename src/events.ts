@@ -1,8 +1,7 @@
-import { areIntervalsOverlapping } from "date-fns/areIntervalsOverlapping";
-import { addMinutes } from "date-fns/addMinutes";
-import { setHoursAndMinutes } from "@/utils";
+import { EventArrayOrArrayEventArray } from "@/dtos";
+import { groupOverlappingEvents, recOptimizeOverlappingEvents } from "@/utils";
 
-const input = [
+export const input = [
   {
     id: 1,
     start: "17:00",
@@ -90,40 +89,12 @@ const input = [
   },
 ];
 
-type Input = {
-  id: number;
-  start: string;
-  duration: number;
-}[];
-
-type Event = {
-  id: number;
-  start: Date;
-  end: Date;
-};
-
-const groupOverlapingEvents = (input: Input) => {
-  return input.reduce<{ [k: string]: Event[] }>((acc, event) => {
-    const [hours, minutes] = event.start.split(":").map(Number);
-
-    const start = setHoursAndMinutes(hours, minutes);
-    const end = addMinutes(start, event.duration);
-    const newEvent = { id: event.id, start, end };
-
-    const array = Object.entries(acc);
-    for (let index = 0; index < array.length; index++) {
-      const [_, grouped] = array[index];
-      if (grouped.some((e) => areIntervalsOverlapping(e, newEvent))) {
-        grouped.push(newEvent);
-        return acc;
-      }
-    }
-
-    return {
-      ...acc,
-      [Object.keys(acc).length + 1]: [newEvent],
-    };
-  }, {});
-};
-
-export const groupedOverlapping = groupOverlapingEvents(input);
+export const groupedOverlapping: {
+  [key: string]: EventArrayOrArrayEventArray;
+} = Object.entries(groupOverlappingEvents(input)).reduce(
+  (acc, [key, val]) => ({
+    ...acc,
+    [key]: recOptimizeOverlappingEvents(val, []),
+  }),
+  {}
+);

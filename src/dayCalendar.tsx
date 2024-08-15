@@ -16,6 +16,26 @@ interface DayCalendarProps {
   children: (scaleRef: AxisScale<Date>) => ReactNode;
 }
 
+interface EventItemProps {
+  y: number;
+  height: number;
+  children: ReactNode;
+}
+
+export function EventItem(props: EventItemProps) {
+  return (
+    <div
+      className="event-item"
+      style={{
+        transform: `translateY(${props.y}px)`,
+        height: `${props.height}px`,
+      }}
+    >
+      {props.children}
+    </div>
+  );
+}
+
 const nineAM = setHoursAndMinutes(9, 0);
 const ninePM = setHoursAndMinutes(21, 0);
 
@@ -76,11 +96,12 @@ function DayCalendarWithoutMemo(props: DayCalendarProps) {
   }, [props.height]);
 
   useEffect(() => {
-    startTransition(() => {
-      renderNowLine(props.width);
-    });
-  }, [props.width, props.height]);
-  console.log("render");
+    renderNowLine(props.width);
+    const interval = setInterval(() => renderNowLine(props.width), 10000);
+
+    return () => clearInterval(interval);
+  }, [props.width, props.height, renderNowLine]);
+
   return (
     <>
       <svg style={{ overflow: "visible", position: "absolute", zIndex: 1 }}>
